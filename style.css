@@ -11,7 +11,13 @@ img {
 }
 #listaNav {
     list-style-type: none;
+    padding: 0;              /* remove espaçamento padrão */
+    margin: 0 auto;          /* centro horizontalmente quando elemento for inline-block */
+    display: inline-block;   /* faz a lista encolher ao conteúdo para permitir centralização */
+    text-align: left;        /* mantém os itens alinhados à esquerda dentro da caixa */
 }
+#listaNav li {
+  margin: 0.5em 0;}
 * {
   margin: 1;
   padding: 1;
@@ -221,6 +227,7 @@ a[href]:active {
     font-size: 0.9em;
   }
 }
+
 
 
 

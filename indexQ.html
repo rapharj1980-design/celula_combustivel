@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz: Células a Combustível</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --light: #f8fafc;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e2e8f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        #quiz-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .header {
+            margin-bottom: 1.5rem;
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            color: var(--dark);
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .option-btn {
+            padding: 0.8rem 1rem;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+            text-align: left;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: #f1f5f9;
+            border-color: var(--primary);
+        }
+
+        .option-btn.correct {
+            background-color: var(--success) !important;
+            color: white;
+            border-color: var(--success);
+        }
+
+        .option-btn.wrong {
+            background-color: var(--danger) !important;
+            color: white;
+            border-color: var(--danger);
+        }
+
+        .footer {
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        #result-screen { display: none; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="quiz-container">
+    <!-- Tela Inicial/Quiz -->
+    <div id="quiz-screen">
+        <div class="header">
+            <h2 id="progress">Questão 1 de 10</h2>
+        </div>
+        <div id="question" class="question-text">O que é uma célula a combustível?</div>
+        <div id="options" class="options-container">
+            <!-- Botões gerados via JS -->
+        </div>
+        <div class="footer">Selecione uma alternativa</div>
+    </div>
+
+    <!-- Tela de Resultado -->
+    <div id="result-screen">
+        <h2>Fim do Quiz! 🧠</h2>
+        <p id="score-text"></p>
+        <button onclick="location.reload()" class="option-btn" style="width:100%; text-align:center; background: var(--primary); color: white; border: none;">
+            Reiniciar Quiz
+        </button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        { q: "O que é uma célula a combustível?", options: ["Um dispositivo que armazena energia elétrica", "Um motor de combustão interna", "Um dispositivo eletroquímico que converte energia química em elétrica", "Um sistema de geração nuclear"], correct: 2 },
+        { q: "Na célula do tipo PEMFC, qual é a função da membrana eletrolítica?", options: ["Conduzir elétrons", "Conduzir prótons (H⁺)", "Armazenar hidrogênio", "Produzir oxigênio"], correct: 1 },
+        { q: "A reação que ocorre no ânodo de uma PEMFC é:", options: ["½O₂ + 2H⁺ + 2e⁻ → H₂O", "H₂ → 2H⁺ + 2e⁻", "H₂O → H₂ + ½O₂", "CO₂ + H₂O → Energia"], correct: 1 },
+        { q: "O principal catalisador utilizado nas PEMFC é:", options: ["Ferro", "Alumínio", "Platina", "Níquel"], correct: 2 },
+        { q: "O principal produto da reação global em uma célula a combustível de hidrogênio é:", options: ["CO₂", "Metano", "Água", "Amônia"], correct: 2 },
+        { q: "Uma das principais vantagens das células a combustível é:", options: ["Alta emissão de poluentes", "Baixa eficiência energética", "Operação silenciosa", "Uso exclusivo de combustíveis fósseis"], correct: 2 },
+        { q: "As células do tipo SOFC operam em:", options: ["Baixas temperaturas (25°C)", "Temperaturas intermediárias (100°C)", "Altas temperaturas (600–1000°C)", "Temperaturas criogênicas"], correct: 2 },
+        { q: "Um dos principais desafios das células a combustível é:", options: ["Excesso de produção de água", "Baixo custo dos materiais", "Alto custo dos catalisadores", "Ausência de eficiência energética"], correct: 2 },
+        { q: "A corrente elétrica é gerada porque:", options: ["Os prótons circulam pelo circuito externo", "Os elétrons circulam pelo circuito externo", "O oxigênio gera elétrons espontaneamente", "A água conduz eletricidade"], correct: 1 },
+        { q: "O desenvolvimento das células a combustível depende fortemente de avanços em:", options: ["Engenharia nuclear", "Engenharia de materiais", "Engenharia agrícola", "Engenharia naval"], correct: 1 }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+
+    const questionEl = document.getElementById("question");
+    const optionsEl = document.getElementById("options");
+    const progressEl = document.getElementById("progress");
+    const quizScreen = document.getElementById("quiz-screen");
+    const resultScreen = document.getElementById("result-screen");
+
+    function loadQuestion() {
+        const q = questions[currentQuestion];
+        progressEl.innerText = `Questão ${currentQuestion + 1} de ${questions.length}`;
+        questionEl.innerText = q.q;
+        optionsEl.innerHTML = "";
+
+        q.options.forEach((opt, index) => {
+            const btn = document.createElement("button");
+            btn.innerText = opt;
+            btn.classList.add("option-btn");
+            btn.onclick = () => checkAnswer(index, btn);
+            optionsEl.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selected, btn) {
+        const correctIndex = questions[currentQuestion].correct;
+        const allBtns = optionsEl.querySelectorAll(".option-btn");
+
+        allBtns.forEach(b => b.disabled = true);
+
+        if (selected === correctIndex) {
+            score++;
+            btn.classList.add("correct");
+        } else {
+            btn.classList.add("wrong");
+            allBtns[correctIndex].classList.add("correct");
+        }
+
+        setTimeout(() => {
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }, 1500);
+    }
+
+    function showResults() {
+        quizScreen.classList.add("hidden");
+        resultScreen.style.display = "block";
+        document.getElementById("score-text").innerText = `Você acertou ${score} de ${questions.length} questões!`;
+    }
+
+    loadQuestion();
+</script>
+<hr>
+<footer><a href="index.html">Voltar Apresentação Principal</a></footer>
+<hr>
+
+</body>
+</html>
